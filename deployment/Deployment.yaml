@@ -20,3 +20,40 @@ spec:
             cpu: "500m"
         ports:
         - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx-deployment
+  ports:
+  - port: 80
+    targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+  annotations:
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  labels:
+    name: nginx-ingress
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - nginx.theiris.club
+      secretName: nginx-secret
+  rules:
+  - host: nginx.theiris.club
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: nginx-service
+            port: 
+              number: 80
